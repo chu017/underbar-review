@@ -7,6 +7,7 @@
   // seem very useful, but remember it--if a function needs to provide an
   // iterator when the user does not pass one in, this will be handy.
   _.identity = function(val) {
+    return val;
   };
 
   /**
@@ -37,6 +38,10 @@
   // Like first, but for the last elements. If n is undefined, return just the
   // last element.
   _.last = function(array, n) {
+    if (n > array.length) {
+      return array;
+    }
+    return n === undefined ? array[array.length - 1] : array.slice(array.length - n, array.length);
   };
 
   // Call iterator(value, key, collection) for each element of collection.
@@ -45,6 +50,20 @@
   // Note: _.each does not have a return value, but rather simply runs the
   // iterator function over each item in the input collection.
   _.each = function(collection, iterator) {
+    // if collection instanceof array
+    if (collection instanceof Array) {
+      // iterate over the array
+      for (var i = 0; i < collection.length; i++) {
+        // apply iterator function to each element
+        iterator(collection[i], i, collection);
+      }
+    } else {
+      // if collection is an object
+      // iterate with for in loop
+      for (var element in collection) {
+        iterator(collection[element], element, collection);
+      }
+    }
   };
 
   // Returns the index at which value can be found in the array, or -1 if value
@@ -66,16 +85,62 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
+    var result = [];
+    // iterate over collection
+    for (var i = 0; i < collection.length; i++) {
+      // apply test to each item
+      if (test(collection[i]) === true) {
+        // push items that pass the test into the result array
+        result.push(collection[i]);
+      }
+    }
+    return result;
   };
 
   // Return all elements of an array that don't pass a truth test.
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
+    var output = [];
+    var truthyValues = _.filter(collection, test);
+    for (var i = 0; i < collection.length; i++) {
+      if (!truthyValues.includes(collection[i])) {
+        output.push(collection[i]);
+      }
+    }
+    return output;
   };
+
+  // uniq([1,2,2,4]) // -> [1,2,4];
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
+    // create a object
+    var obj = {};
+    var output = [];
+    var newArr = [];
+    console.log(iterator);
+    if (iterator) {
+      for (var i = 0; i < array.length; i++) {
+        newArr.push(iterator(array[i]));
+        // [true, false, false, false, false. false]
+        // [1, 2, 2, 3, 4, 4]
+      }
+    } else {
+      newArr = array.slice();
+    }
+
+    // iterate over the array // length = 6
+    for (var i = 0; i < newArr.length; i++) {
+      // check each item in the array included in the object
+      if (obj[newArr[i]] === undefined) {
+      // else, create the key
+        obj[newArr[i]] = 1;
+        output.push(array[i]);
+      }
+    }
+
+    return output;
   };
 
 
@@ -107,19 +172,19 @@
   // Reduces an array or object to a single value by repetitively calling
   // iterator(accumulator, item) for each item. accumulator should be
   // the return value of the previous iterator call.
-  //  
+  //
   // You can pass in a starting value for the accumulator as the third argument
   // to reduce. If no starting value is passed, the first element is used as
   // the accumulator, and is never passed to the iterator. In other words, in
   // the case where a starting value is not passed, the iterator is not invoked
   // until the second element, with the first element as its second argument.
-  //  
+  //
   // Example:
   //   var numbers = [1,2,3];
   //   var sum = _.reduce(numbers, function(total, number){
   //     return total + number;
   //   }, 0); // should be 6
-  //  
+  //
   //   var identity = _.reduce([5], function(total, number){
   //     return total + number * number;
   //   }); // should be 5, regardless of the iterator function passed in
